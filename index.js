@@ -9,7 +9,7 @@ function staticValue (value) {
     cb(null, value)
   }
 }
-
+var defaultOptions = {}
 var defaultAcl = staticValue('private')
 var defaultContentType = staticValue('application/octet-stream')
 
@@ -86,6 +86,12 @@ function S3Storage (opts) {
   switch (typeof opts.s3) {
     case 'object': this.s3 = opts.s3; break
     default: throw new TypeError('Expected opts.s3 to be object')
+  }
+
+  switch (typeof opts.options) {
+    case 'object': this.options = opts.options; break
+    case 'undefined': this.options = defaultOptions; break
+    default: throw new TypeError('Expected opts.options to be undefined or object')
   }
 
   switch (typeof opts.bucket) {
@@ -179,7 +185,7 @@ S3Storage.prototype._handleFile = function (req, file, cb) {
       params.ContentDisposition = opts.contentDisposition
     }
 
-    var upload = this.s3.upload(params)
+    var upload = this.s3.upload(params, this.options)
 
     upload.on('httpUploadProgress', function (ev) {
       if (ev.total) currentSize = ev.total
